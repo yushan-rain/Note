@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F0F4F8">
+
+    <!-- 搜索框 -->
+    <EditText
+        android:id="@+id/search_box"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="搜索笔记标题或内容..."
+        android:padding="10dp"
+        android:layout_margin="10dp"
+        android:background="@android:drawable/edit_text"
+        android:singleLine="true" />
+
+    <!-- 列表 -->
+    <!-- 注意：ID必须是 @android:id/list，ListActivity 才能自动识别它 -->
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>
