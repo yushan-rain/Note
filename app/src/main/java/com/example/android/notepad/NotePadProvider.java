@@ -63,7 +63,7 @@ public class NotePadProvider extends ContentProvider implements PipeDataWriter<C
     /**
      * The database version
      */
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
 
     /**
      * A projection map used to select columns from the database
@@ -166,6 +166,10 @@ public class NotePadProvider extends ContentProvider implements PipeDataWriter<C
                 NotePad.Notes.COLUMN_NAME_IMAGE_PATH,
                 NotePad.Notes.COLUMN_NAME_IMAGE_PATH);
 
+        sNotesProjectionMap.put(
+                NotePad.Notes.COLUMN_NAME_BG_COLOR,
+                NotePad.Notes.COLUMN_NAME_BG_COLOR);
+
         /*
          * Creates an initializes a projection map for handling Live Folders
          */
@@ -222,17 +226,48 @@ public class NotePadProvider extends ContentProvider implements PipeDataWriter<C
         */
        @Override
        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+           if (oldVersion < 3) {
+               db.execSQL("DROP TABLE IF EXISTS " + NotePad.Notes.TABLE_NAME);
+               onCreate(db);
+               return;
+           }
 
-           // Logs that the database is being upgraded
-           Log.w(TAG, "Upgrading database from version " + oldVersion + " to "
-                   + newVersion + ", which will destroy all old data");
-
-           // Kills the table and existing data
-           db.execSQL("DROP TABLE IF EXISTS notes");
-
-           // Recreates the database with a new version
-           onCreate(db);
+           if (oldVersion < 4
+                   && !hasColumn(db, NotePad.Notes.TABLE_NAME,
+                   NotePad.Notes.COLUMN_NAME_BG_COLOR)) {
+               db.execSQL(
+                       "ALTER TABLE " + NotePad.Notes.TABLE_NAME
+                               + " ADD COLUMN "
+                               + NotePad.Notes.COLUMN_NAME_BG_COLOR
+                               + " INTEGER"
+               );
+           }
        }
+
+        private boolean hasColumn(SQLiteDatabase db,
+                                  String tableName,
+                                  String columnName) {
+            Cursor cursor = db.rawQuery(
+                    "PRAGMA table_info(" + tableName + ")",
+                    null
+            );
+
+            if (cursor != null) {
+                try {
+                    int nameIndex = cursor.getColumnIndex("name");
+                    while (cursor.moveToNext()) {
+                        if (nameIndex >= 0
+                                && columnName.equals(cursor.getString(nameIndex))) {
+                            return true;
+                        }
+                    }
+                } finally {
+                    cursor.close();
+                }
+            }
+
+            return false;
+        }
    }
 
    /**
